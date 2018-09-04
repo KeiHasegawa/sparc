@@ -10,17 +10,17 @@
 
 extern "C" DLL_EXPORT int generator_sizeof(const COMPILER::type* T)
 {
-	using namespace COMPILER;
-	T = T->unqualified();
+        using namespace COMPILER;
+        T = T->unqualified();
 
 #ifdef _MSC_VER
-	if (typeid(*T) == typeid(long_double_type))
-		return 16;
+        if (typeid(*T) == typeid(long_double_type))
+                return 16;
 #endif  // _MSC_VER
     return T->size();
 }
 
 extern "C" DLL_EXPORT bool generator_require_align()
 {
-	return true;
+        return true;
 }

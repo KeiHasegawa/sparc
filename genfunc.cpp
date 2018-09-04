@@ -32,7 +32,7 @@ void genfunc(const COMPILER::fundef* fundef, const std::vector<COMPILER::tac*>& 
   func_label = scope_name(func->m_scope);
   func_label += func_name(func->m_name);
   if ( !func->m_csymbol )
-	  func_label += signature(func->m_type);
+          func_label += signature(func->m_type);
 #endif // CXX_GENERATOR
   usr::flag flag = fundef->m_usr->m_flag;
   usr::flag mask = usr::flag(usr::STATIC | usr::INLINE);
@@ -106,8 +106,8 @@ void clear_address_descriptor()
       ++p;
     else {
       IT q = p++;
-	  delete q->second;
-	  address_descriptor.erase(q);
+          delete q->second;
+          address_descriptor.erase(q);
     }
   }
 }
@@ -119,9 +119,9 @@ inline void destroy(const std::pair<const COMPILER::var*, stack*>& pair)
 
 void clear_record_param()
 {
-	using namespace std;
-	for_each(record_param.begin(),record_param.end(),destroy);
-	record_param.clear();
+        using namespace std;
+        for_each(record_param.begin(),record_param.end(),destroy);
+        record_param.clear();
 }
 
 void leave()
@@ -203,10 +203,10 @@ int parameter(int offset, COMPILER::usr* entry)
   const type* T = entry->m_type;
   int unpromed = T->size();
   if ( T->scalar() && unpromed < 16 ){
-	  T = T->promotion();
-	  int size = T->size();
-	  address_descriptor[entry] = new stack(offset,size,unpromed);
-	  return offset + size;
+          T = T->promotion();
+          int size = T->size();
+          address_descriptor[entry] = new stack(offset,size,unpromed);
+          return offset + size;
   }
   else {
     address_descriptor[entry] = new stack(offset,4,-1);
@@ -243,24 +243,24 @@ void recursive_locvar::operator()(const COMPILER::scope* ptr)
 
 int recursive_locvar::add(int n, const std::pair<std::string, std::vector<COMPILER::usr*> >& pair)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const vector<usr*>& vec = pair.second;
-	return accumulate(vec.begin(), vec.end(), n, add2);
+        using namespace std;
+        using namespace COMPILER;
+        const vector<usr*>& vec = pair.second;
+        return accumulate(vec.begin(), vec.end(), n, add2);
 }
 
 int recursive_locvar::add2(int n, COMPILER::usr* entry)
 {
-	using namespace COMPILER;
-	usr::flag flag = entry->m_flag;
-	usr::flag mask = usr::flag(usr::TYPEDEF | usr::STATIC | usr::EXTERN | usr::FUNCTION | usr::VL);
-	if (flag & mask)
-		return n;
+        using namespace COMPILER;
+        usr::flag flag = entry->m_flag;
+        usr::flag mask = usr::flag(usr::TYPEDEF | usr::STATIC | usr::EXTERN | usr::FUNCTION | usr::VL);
+        if (flag & mask)
+                return n;
 
     if ( entry->isconstant() )
       return n;
 
-	const type* T = entry->m_type;
+        const type* T = entry->m_type;
 
 #ifdef CXX_GENERATOR
   typedef const anonymous_class ANONYMOUS;
@@ -290,14 +290,14 @@ int recursive_locvar::add2(int n, COMPILER::usr* entry)
 
 int recursive_locvar::add3(int n, COMPILER::var* v)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const type* T = v->m_type;
-	n = align(n, T->align());
-	int size = T->size();
-	n += size;
-	address_descriptor[v] = new ::stack(-n, size);
-	return n;
+        using namespace std;
+        using namespace COMPILER;
+        const type* T = v->m_type;
+        n = align(n, T->align());
+        int size = T->size();
+        n += size;
+        address_descriptor[v] = new ::stack(-n, size);
+        return n;
 }
 
 class arg_count {
@@ -313,10 +313,10 @@ public:
 
 int fun_arg(const std::vector<COMPILER::tac*>& v3ac)
 {
-	using namespace std;
-	int n;
-	for_each(v3ac.begin(),v3ac.end(),arg_count(&n));
-	return n < 24 ? 24 : n;
+        using namespace std;
+        int n;
+        for_each(v3ac.begin(),v3ac.end(),arg_count(&n));
+        return n < 24 ? 24 : n;
 }
 
 std::map<COMPILER::var*, stack*> record_param;
@@ -328,7 +328,7 @@ void arg_count::operator()(const COMPILER::tac* tac)
   if ( tac->id == tac::PARAM ){
     var* y = tac->y;
     const type* T = y->m_type;
-	T = T->promotion();
+        T = T->promotion();
     int size = T->size();
     if ( T->scalar() && size < 16 )
       m_curr += size;
@@ -358,30 +358,30 @@ void save_if_varg(const COMPILER::usr* func, int regno);
 
 void save_parameter(const COMPILER::fundef* fundef)
 {
-	using namespace std;
-	using namespace COMPILER;
+        using namespace std;
+        using namespace COMPILER;
 
-	const COMPILER::usr* func = fundef->m_usr;
-	const COMPILER::param_scope* parameter = fundef->m_param;
-	const vector<usr*>& vec = parameter->m_order;
-	int offset;
-	for_each(vec.begin(),vec.end(),save(&offset));
-	save_if_varg(func,(offset - aggre_regwin)/4);
+        const COMPILER::usr* func = fundef->m_usr;
+        const COMPILER::param_scope* parameter = fundef->m_param;
+        const vector<usr*>& vec = parameter->m_order;
+        int offset;
+        for_each(vec.begin(),vec.end(),save(&offset));
+        save_if_varg(func,(offset - aggre_regwin)/4);
 }
 
 void save_if_varg(const COMPILER::usr* func, int regno)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const type* T = func->m_type;
-	typedef const func_type FUNC;
-	FUNC* ft = static_cast<FUNC*>(T);
-	const vector<const type*>& param = ft->param();
-	if (param.empty())
-		return;
-	T = param.back();
-	if (T->m_id != type::ELLIPSIS)
-		return;
+        using namespace std;
+        using namespace COMPILER;
+        const type* T = func->m_type;
+        typedef const func_type FUNC;
+        FUNC* ft = static_cast<FUNC*>(T);
+        const vector<const type*>& param = ft->param();
+        if (param.empty())
+                return;
+        T = param.back();
+        if (T->m_id != type::ELLIPSIS)
+                return;
     for ( int i = regno ; i < 6 ; ++i ){
       string reg = "%i";
       reg += char('0' + i);
@@ -392,27 +392,27 @@ void save_if_varg(const COMPILER::usr* func, int regno)
 
 void save::operator()(COMPILER::usr* entry)
 {
-	using namespace std;
-	using namespace COMPILER;
+        using namespace std;
+        using namespace COMPILER;
 #ifdef CXX_GENERATOR
-	if ( entry->m_typedef )
-		return;
+        if ( entry->m_typedef )
+                return;
 #endif // CXX_GENERATOR
 
-	if (*m_offset >= 4 * 6 + aggre_regwin)
-		return;
-	
-	map<const var*, address*>::const_iterator p = address_descriptor.find(entry);
-	assert(p != address_descriptor.end());
-	string reg = "%i";
-	int index = (*m_offset - aggre_regwin)/4;
-	reg += char(index + '0');
-	typedef ::stack STACK;
-	STACK* q = static_cast<STACK*>(p->second);
-	q->save(reg);
-	const type* T = entry->m_type->promotion();
-	if ( T->aggregate() || T->size() == 16 )
-		*m_offset += 4;
-	else
-		*m_offset += T->size();
+        if (*m_offset >= 4 * 6 + aggre_regwin)
+                return;
+        
+        map<const var*, address*>::const_iterator p = address_descriptor.find(entry);
+        assert(p != address_descriptor.end());
+        string reg = "%i";
+        int index = (*m_offset - aggre_regwin)/4;
+        reg += char(index + '0');
+        typedef ::stack STACK;
+        STACK* q = static_cast<STACK*>(p->second);
+        q->save(reg);
+        const type* T = entry->m_type->promotion();
+        if ( T->aggregate() || T->size() == 16 )
+                *m_offset += 4;
+        else
+                *m_offset += T->size();
 }

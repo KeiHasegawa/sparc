@@ -17,25 +17,25 @@ bool debug_flag;
 extern "C" DLL_EXPORT int generator_seed()
 {
 #ifdef _MSC_VER
-	int r = _MSC_VER;
+        int r = _MSC_VER;
 #ifndef CXX_GENERATOR
-	r += 10000000;
+        r += 10000000;
 #else // CXX_GENERATOR
-	r += 20000000;
+        r += 20000000;
 #endif // CXX_GENERATOR
 #ifdef WIN32
-	r += 100000;
+        r += 100000;
 #endif // WIN32
 #endif // _MSC_VER
 #ifdef __GNUC__
-	int r = (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__);
+        int r = (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__);
 #ifndef CXX_GENERATOR
-	r += 30000000;
+        r += 30000000;
 #else // CXX_GENERATOR
-	r += 40000000;
+        r += 40000000;
 #endif // CXX_GENERATOR
 #endif // __GNUC__
-	return r;
+        return r;
 }
 
 void output_if(tc_pattern*);
@@ -92,11 +92,11 @@ int option_handler(const char* option)
 
 extern "C" DLL_EXPORT void generator_option(int argc, const char** argv, int* error)
 {
-	++argv;
-	--argc;
+        ++argv;
+        --argc;
 #ifdef _MSC_VER
-	for (const char** p = &argv[0]; p != &argv[argc]; ++p, ++error)
-		*error = option_handler(*p);
+        for (const char** p = &argv[0]; p != &argv[argc]; ++p, ++error)
+                *error = option_handler(*p);
 #else // _MSC_VER
     using namespace std;
     transform(&argv[0],&argv[argc],&error[0],option_handler);
@@ -113,14 +113,14 @@ extern "C" DLL_EXPORT int generator_open_file(const char* fn)
 inline void destroy_address(std::pair<const COMPILER::var*, address*> pair)
 {
 #ifndef CXX_GENERATOR
-	delete pair.second;
+        delete pair.second;
 #else // CXX_GENERATOR
-	const storage_class* storage = pair.first->m_storage;
-	typedef const enum_member_class MEM;
-	typedef const anonymous_class ANONYMOUS;
+        const storage_class* storage = pair.first->m_storage;
+        typedef const enum_member_class MEM;
+        typedef const anonymous_class ANONYMOUS;
     bool b = !dynamic_cast<MEM*>(storage) && !dynamic_cast<ANONYMOUS*>(storage);
-	if (b)
-		delete pair.second;
+        if (b)
+                delete pair.second;
 #endif // CXX_GENERATOR
 }
 
@@ -168,13 +168,13 @@ void(*output3ac)(std::ostream&, const COMPILER::tac*);
 
 extern "C" DLL_EXPORT void generator_spell(void* arg)
 {
-	using namespace std;
-	using namespace COMPILER;
-	void* magic[] = {
-		((char **)arg)[0],
-	};
-	int index = 0;
-	memcpy(&output3ac, &magic[index++], sizeof magic[0]);
+        using namespace std;
+        using namespace COMPILER;
+        void* magic[] = {
+                ((char **)arg)[0],
+        };
+        int index = 0;
+        memcpy(&output3ac, &magic[index++], sizeof magic[0]);
 }
 
 void output_section(section kind)
@@ -380,37 +380,37 @@ void stack::load(std::string reg, int size) const
     else if ( m_offset < 0 || !(m_offset % m_size) ){
       int size = m_size;
       if ( m_size == 16 )
-	size = 8;
+        size = 8;
       std::string suffix = load_suffix(size);
       std::string tmp;
       if ( -4096 <= m_offset ){
-	out << '\t' << "ld" << suffix << '\t' << '[' << "%fp";
-	if ( m_offset > 0 )
-	  out << '+';
-	out << m_offset << "], " << reg << '\n';
+        out << '\t' << "ld" << suffix << '\t' << '[' << "%fp";
+        if ( m_offset > 0 )
+          out << '+';
+        out << m_offset << "], " << reg << '\n';
       }
       else {
-	tmp = "%g1";
-	out << '\t' << "sethi" << '\t' << "%hi(" << m_offset << "), " << tmp << '\n';
-	out << '\t' << "or" << '\t' << tmp << ", %lo(" << m_offset << "), " << tmp << '\n';
-	out << '\t' << "add" << '\t' << "%fp, " << tmp << ", " << tmp << '\n';
-	out << '\t' << "ld" << suffix << '\t' << '[' << tmp << "], " << reg << '\n';
+        tmp = "%g1";
+        out << '\t' << "sethi" << '\t' << "%hi(" << m_offset << "), " << tmp << '\n';
+        out << '\t' << "or" << '\t' << tmp << ", %lo(" << m_offset << "), " << tmp << '\n';
+        out << '\t' << "add" << '\t' << "%fp, " << tmp << ", " << tmp << '\n';
+        out << '\t' << "ld" << suffix << '\t' << '[' << tmp << "], " << reg << '\n';
       }
       if ( m_size == 16 ){
-	char c = reg[reg.size()-1];
-	reg.erase(reg.size()-1);
-	reg += c + 4;
-	if ( -4096 <= m_offset ){ 
-	  out << '\t' << "ld" << suffix << '\t' << '[' << "%fp";
-	  if ( m_offset > 0 )
-	    out << '+';
-	  out << m_offset + 8 << "], " << reg << '\n';
-	}
-	else {
-	  out << '\t' << "add" << '\t' << "8, " << tmp << ", " << tmp << '\n';
-	  out << '\t' << "ld" << suffix << '\t' << '[' << tmp << "], ";
-	  out << reg << '\n';
-	}
+        char c = reg[reg.size()-1];
+        reg.erase(reg.size()-1);
+        reg += c + 4;
+        if ( -4096 <= m_offset ){ 
+          out << '\t' << "ld" << suffix << '\t' << '[' << "%fp";
+          if ( m_offset > 0 )
+            out << '+';
+          out << m_offset + 8 << "], " << reg << '\n';
+        }
+        else {
+          out << '\t' << "add" << '\t' << "8, " << tmp << ", " << tmp << '\n';
+          out << '\t' << "ld" << suffix << '\t' << '[' << tmp << "], ";
+          out << reg << '\n';
+        }
       }
     }
     else {
@@ -450,13 +450,13 @@ void stack::_store(std::string reg, bool save_flag) const
       reg.erase(reg.size()-1);
       reg += c + 4;
       if ( -4096 <= m_offset ){
-	out << '\t' << "st" << suffix << '\t' << reg << ", ";
-	out << '[' << "%fp" << m_offset + 8 << ']' << '\n';
+        out << '\t' << "st" << suffix << '\t' << reg << ", ";
+        out << '[' << "%fp" << m_offset + 8 << ']' << '\n';
       }
       else {
-	out << '\t' << "st" << suffix << '\t' << reg << ", ";
+        out << '\t' << "st" << suffix << '\t' << reg << ", ";
       out << '\t' << "add" << '\t' << "8, " << tmp << ", " << tmp << '\n';
-	out << '[' << tmp << ']' << '\n';
+        out << '[' << tmp << ']' << '\n';
       }
     }
   }
@@ -474,11 +474,11 @@ void stack::_store(std::string reg, bool save_flag) const
       out << '\t' << "st" << '\t' << reg << ", ";
       out << '[' << "%fp" << '+' << m_offset << ']' << '\n';
       if ( should_store_high(m_size,save_flag,m_offset) ){
-	char index = reg[reg.size()-1];
-	reg.erase(reg.size()-1);
-	reg += ++index;
-	out << '\t' << "st" << '\t' << reg << ", ";
-	out << '[' << "%fp" << '+' << m_offset + 4 << ']' << '\n';
+        char index = reg[reg.size()-1];
+        reg.erase(reg.size()-1);
+        reg += ++index;
+        out << '\t' << "st" << '\t' << reg << ", ";
+        out << '[' << "%fp" << '+' << m_offset + 4 << ']' << '\n';
       }
     }
   }
@@ -543,80 +543,80 @@ void stack::get(std::string reg) const
 
 void mem::load(std::string reg, int size) const
 {
-	using namespace std;
-	using namespace COMPILER;
-	const type* T = m_usr->m_type;
-	int Tsz = T->size();
-	string ireg = reg;
-	if ( ireg[1] == 'f' )
-		ireg = "%i0";
-	if ( Tsz == 16 ){
-		if ( ireg[1] == 'i' )
-			ireg[1] = 'o';
-		else
-			ireg[1] = 'i';
-	}
-	get(ireg);
-	if ( size ){
-		string suffix = load_suffix(size);
-		out << '\t' << "ld" << suffix << '\t';
-		out << '[' << ireg << '+' << Tsz - size << "], " << reg << '\n';
-	}
-	else {
-		int size = Tsz;
-		if ( Tsz == 16 )
-			size = 8;
-		string suffix = load_suffix(size);
-		out << '\t' << "ld" << suffix << '\t';
-		out << '[' << ireg << "], " << reg << '\n';
-		if ( Tsz == 16 ){
-			char c = reg[reg.size()-1];
-			reg.erase(reg.size()-1);
-			reg += c + 4;
-			out << '\t' << "ld" << suffix << '\t';
-			out << '[' << ireg << "+8], " << reg << '\n';
-		}
-	}
+        using namespace std;
+        using namespace COMPILER;
+        const type* T = m_usr->m_type;
+        int Tsz = T->size();
+        string ireg = reg;
+        if ( ireg[1] == 'f' )
+                ireg = "%i0";
+        if ( Tsz == 16 ){
+                if ( ireg[1] == 'i' )
+                        ireg[1] = 'o';
+                else
+                        ireg[1] = 'i';
+        }
+        get(ireg);
+        if ( size ){
+                string suffix = load_suffix(size);
+                out << '\t' << "ld" << suffix << '\t';
+                out << '[' << ireg << '+' << Tsz - size << "], " << reg << '\n';
+        }
+        else {
+                int size = Tsz;
+                if ( Tsz == 16 )
+                        size = 8;
+                string suffix = load_suffix(size);
+                out << '\t' << "ld" << suffix << '\t';
+                out << '[' << ireg << "], " << reg << '\n';
+                if ( Tsz == 16 ){
+                        char c = reg[reg.size()-1];
+                        reg.erase(reg.size()-1);
+                        reg += c + 4;
+                        out << '\t' << "ld" << suffix << '\t';
+                        out << '[' << ireg << "+8], " << reg << '\n';
+                }
+        }
 }
 
 void mem::store(std::string reg) const
 {
-	using namespace std;
-	using namespace COMPILER;
-	const type* T = m_usr->m_type;
-	int Tsz = T->size();
-	int size = Tsz;
-	if ( Tsz == 16 )
-		size = 8;
-	string suffix = store_suffix(size);
-	string ireg = reg == "%i0" ? "%o0" : "%i0";
-	get(ireg);
-	out << '\t' << "st" << suffix << '\t' << reg << ", [" << ireg << "]\n";
-	if ( Tsz == 16 ){
-		char c = reg[reg.size()-1];
-		reg.erase(reg.size()-1);
-		reg += c + 4;
-		out << '\t' << "st" << suffix << '\t' << reg << ", [" << ireg << "+8]\n";
-	}
+        using namespace std;
+        using namespace COMPILER;
+        const type* T = m_usr->m_type;
+        int Tsz = T->size();
+        int size = Tsz;
+        if ( Tsz == 16 )
+                size = 8;
+        string suffix = store_suffix(size);
+        string ireg = reg == "%i0" ? "%o0" : "%i0";
+        get(ireg);
+        out << '\t' << "st" << suffix << '\t' << reg << ", [" << ireg << "]\n";
+        if ( Tsz == 16 ){
+                char c = reg[reg.size()-1];
+                reg.erase(reg.size()-1);
+                reg += c + 4;
+                out << '\t' << "st" << suffix << '\t' << reg << ", [" << ireg << "+8]\n";
+        }
 }
 
 void mem::get(std::string reg) const
 {
-	using namespace std;
-	string label = m_label.empty() ? m_usr->m_name : m_label;
-	out << '\t' << "sethi" << '\t' << "%hi(" << label << "), " << reg << '\n';
-	out << '\t' << "or"    << '\t' << reg << ", %lo(" << label << "), " << reg << '\n';
+        using namespace std;
+        string label = m_label.empty() ? m_usr->m_name : m_label;
+        out << '\t' << "sethi" << '\t' << "%hi(" << label << "), " << reg << '\n';
+        out << '\t' << "or"    << '\t' << reg << ", %lo(" << label << "), " << reg << '\n';
 }
 
 struct function_exit function_exit;
 
 std::string new_label()
 {
-	using namespace std;
-	static int cnt;
-	ostringstream os;
-	os << ".L" << ++cnt;
-	return os.str();
+        using namespace std;
+        static int cnt;
+        ostringstream os;
+        os << ".L" << ++cnt;
+        return os.str();
 }
 
 std::vector<tc_pattern*> tc_pattern::m_all;
@@ -625,24 +625,24 @@ struct double_0x80000000 double_0x80000000;
 
 void double_0x80000000::output() const
 {
-	// (double)0x80000000 のビット表現
-	output_section(rom);
-	out << '\t' << ".align" << '\t' << 8 << '\n';
-	out << m_label << ":\n";
-	out << '\t' << ".long" << '\t' << 1105199104 << '\n';
-	out << '\t' << ".long" << '\t' << 0 << '\n';
+        // (double)0x80000000 のビット表現
+        output_section(rom);
+        out << '\t' << ".align" << '\t' << 8 << '\n';
+        out << m_label << ":\n";
+        out << '\t' << ".long" << '\t' << 1105199104 << '\n';
+        out << '\t' << ".long" << '\t' << 0 << '\n';
 }
 
 struct double_0x100000000 double_0x100000000;
 
 void double_0x100000000::output() const
 {
-	// (double)0x100000000 のビット表現
-	output_section(rom);
-	out << '\t' << ".align" << '\t' << 8 << '\n';
-	out << m_label << ":\n";
-	out << '\t' << ".long" << '\t' << 1106247680 << '\n';
-	out << '\t' << ".long" << '\t' << 0 << '\n';
+        // (double)0x100000000 のビット表現
+        output_section(rom);
+        out << '\t' << ".align" << '\t' << 8 << '\n';
+        out << m_label << ":\n";
+        out << '\t' << ".long" << '\t' << 1106247680 << '\n';
+        out << '\t' << ".long" << '\t' << 0 << '\n';
 }
 
 struct long_double_0x100000000 long_double_0x100000000;

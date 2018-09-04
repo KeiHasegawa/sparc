@@ -12,22 +12,22 @@ void output_data(const std::pair<std::string, std::vector<COMPILER::usr*> >& pai
 
 void genobj(const COMPILER::scope* tree)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const map<string, vector<usr*> >& usrs = tree->m_usrs;
-	for_each(usrs.begin(),usrs.end(),output_data);
-	const vector<scope*>& vec = tree->m_children;
-	for_each(vec.begin(),vec.end(),genobj);
+        using namespace std;
+        using namespace COMPILER;
+        const map<string, vector<usr*> >& usrs = tree->m_usrs;
+        for_each(usrs.begin(),usrs.end(),output_data);
+        const vector<scope*>& vec = tree->m_children;
+        for_each(vec.begin(),vec.end(),genobj);
 }
 
 void output_data2(const COMPILER::usr* entry);
 
 void output_data(const std::pair<std::string, std::vector<COMPILER::usr*> >& pair)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const vector<usr*>& vec = pair.second;
-	for_each(vec.begin(), vec.end(), output_data2);
+        using namespace std;
+        using namespace COMPILER;
+        const vector<usr*>& vec = pair.second;
+        for_each(vec.begin(), vec.end(), output_data2);
 }
 
 void constant_data(const COMPILER::usr* entry);
@@ -40,89 +40,89 @@ int static_counter;
 
 void output_data2(const COMPILER::usr* entry)
 {
-	using namespace std;
-	using namespace COMPILER;
-	usr::flag flag = entry->m_flag;
-	if (flag & usr::TYPEDEF)
-		return;
-	if (address_descriptor.find(entry) != address_descriptor.end())
-		return;
+        using namespace std;
+        using namespace COMPILER;
+        usr::flag flag = entry->m_flag;
+        if (flag & usr::TYPEDEF)
+                return;
+        if (address_descriptor.find(entry) != address_descriptor.end())
+                return;
 
-	usr::flag mask = usr::flag(usr::EXTERN | usr::FUNCTION);
-	if (flag & mask) {
-		address_descriptor[entry] = new mem(entry);
-		return;
-	}
+        usr::flag mask = usr::flag(usr::EXTERN | usr::FUNCTION);
+        if (flag & mask) {
+                address_descriptor[entry] = new mem(entry);
+                return;
+        }
 
-	if ( entry->isconstant() )
-		return constant_data(entry);
+        if ( entry->isconstant() )
+                return constant_data(entry);
 
-	if ( string_literal(entry) )
-		return string_literal_data(entry);
+        if ( string_literal(entry) )
+                return string_literal_data(entry);
 
-	if (!is_top(entry->m_scope) && !(flag & usr::STATIC))
-		return;
+        if (!is_top(entry->m_scope) && !(flag & usr::STATIC))
+                return;
 
-	string label = entry->m_name;
-	const type* T = entry->m_type;
-	output_section(T->modifiable() ? ram : rom);
+        string label = entry->m_name;
+        const type* T = entry->m_type;
+        output_section(T->modifiable() ? ram : rom);
 
-	if ( flag & usr::STATIC ){
-		if ( !is_top(entry->m_scope) ){
-			ostringstream os;
-			os << '.' << static_counter++;
-			label += os.str();
-		}
-	}
-	else
-		out << '\t' << ".global" << '\t' << label << '\n';
+        if ( flag & usr::STATIC ){
+                if ( !is_top(entry->m_scope) ){
+                        ostringstream os;
+                        os << '.' << static_counter++;
+                        label += os.str();
+                }
+        }
+        else
+                out << '\t' << ".global" << '\t' << label << '\n';
 
-	out << '\t' << ".align" << '\t' << T->align() << '\n';
-	if ( flag & usr::WITH_INI ){
-		const with_initial* wi = static_cast<const with_initial*>(entry);
-	    out << label << ":\n";
-	    const map<int, var*>& value = wi->m_value;
-		if (int n = T->size() - accumulate(value.begin(), value.end(), 0, initial))
-			out << '\t' << ".space" << '\t' << n << '\n';
+        out << '\t' << ".align" << '\t' << T->align() << '\n';
+        if ( flag & usr::WITH_INI ){
+                const with_initial* wi = static_cast<const with_initial*>(entry);
+            out << label << ":\n";
+            const map<int, var*>& value = wi->m_value;
+                if (int n = T->size() - accumulate(value.begin(), value.end(), 0, initial))
+                        out << '\t' << ".space" << '\t' << n << '\n';
   }
   else {
-	  int size = T->size();
-	  int align = T->align();
-	  out << '\t' << ".comm" << '\t' << label << ", ";
-	  out << size << ", " << align << '\n';
+          int size = T->size();
+          int align = T->align();
+          out << '\t' << ".comm" << '\t' << label << ", ";
+          out << size << ", " << align << '\n';
   }
   address_descriptor[entry] = new mem(entry);
 }
 
 void constant_data(const COMPILER::usr* entry)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const type* T = entry->m_type;
-	if ( T->real() || T->size() > 4 ){
-		output_section(rom);
-		out << '\t' << ".align" << '\t' << T->align() << '\n';
-		string label = new_label();
-		out << label << ":\n";
-		pair<int, var*> tmp(0, (var*)entry);
-		initial(0, tmp);
-		address_descriptor[entry] = new mem(entry, label);
-	}
-	else
-		address_descriptor[entry] = new imm(entry);
+        using namespace std;
+        using namespace COMPILER;
+        const type* T = entry->m_type;
+        if ( T->real() || T->size() > 4 ){
+                output_section(rom);
+                out << '\t' << ".align" << '\t' << T->align() << '\n';
+                string label = new_label();
+                out << label << ":\n";
+                pair<int, var*> tmp(0, (var*)entry);
+                initial(0, tmp);
+                address_descriptor[entry] = new mem(entry, label);
+        }
+        else
+                address_descriptor[entry] = new imm(entry);
 }
 
 void string_literal_data(const COMPILER::usr* entry)
 {
-	using namespace std;
-	output_section(rom);
-	string label = new_label();
-	out << label << ":\n";
-	string name = entry->m_name;
-	name.erase(name.size()-1);
-	name += "\\0\"";
-	out << '\t' << ".ascii" << '\t' << name << '\n';
-	address_descriptor[entry] = new mem(entry);
+        using namespace std;
+        output_section(rom);
+        string label = new_label();
+        out << label << ":\n";
+        string name = entry->m_name;
+        name.erase(name.size()-1);
+        name += "\\0\"";
+        out << '\t' << ".ascii" << '\t' << name << '\n';
+        address_descriptor[entry] = new mem(entry);
 }
 
 int initial_real(int offset, COMPILER::var*);
@@ -131,119 +131,119 @@ int initial_notreal(int offset, COMPILER::var*);
 
 int initial(int offset, const std::pair<int, COMPILER::var*>& pair)
 {
-	using namespace std;
-	using namespace COMPILER;
-	if (int n = pair.first - offset) {
-		out << '\t' << ".space" << '\t' << n << '\n';
-		offset = pair.first;
-	}
-	var* v = pair.second;
-	const type* T = v->m_type;
-	if ( T->real() )
-		return initial_real(offset, v);
-	if ( T->scalar() )
-		return initial_notreal(offset, v);
-	usr* entry = v->usr_cast();
-	assert(entry && string_literal(entry));
-	string name = entry->m_name;
-	name.erase(name.size()-1);
-	name += "\\0\"";
-	out << '\t' << ".ascii" << '\t' << name << '\n';
-	return offset + name.size() + 1;
+        using namespace std;
+        using namespace COMPILER;
+        if (int n = pair.first - offset) {
+                out << '\t' << ".space" << '\t' << n << '\n';
+                offset = pair.first;
+        }
+        var* v = pair.second;
+        const type* T = v->m_type;
+        if ( T->real() )
+                return initial_real(offset, v);
+        if ( T->scalar() )
+                return initial_notreal(offset, v);
+        usr* entry = v->usr_cast();
+        assert(entry && string_literal(entry));
+        string name = entry->m_name;
+        name.erase(name.size()-1);
+        name += "\\0\"";
+        out << '\t' << ".ascii" << '\t' << name << '\n';
+        return offset + name.size() + 1;
 }
 
 int initial_notreal(int offset, COMPILER::var* v)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const type* T = v->m_type;
-	int size = T->size();
-	out << '\t';
-	switch (size) {
-	case 1: out << ".byte"; break;
-	case 2: out << ".half"; break;
-	case 4: out << ".long"; break;
-	}
-	usr* entry = v->usr_cast();
-	if (entry && size <= 4) {
-		string name = entry->m_name;
-		out << '\t' << name << '\n';
-		return offset + size;
-	}
-	if (addrof* addr = v->addrof_cast()) {
-		var* v = addr->m_ref;
-		usr* u = v->usr_cast();
-		assert(u);
-		int off = addr->m_offset;
-		out << '\t' << u->m_name;
-		if (off)
-			out << "+" << off;
-		return offset + addr->m_type->size();
-	}
+        using namespace std;
+        using namespace COMPILER;
+        const type* T = v->m_type;
+        int size = T->size();
+        out << '\t';
+        switch (size) {
+        case 1: out << ".byte"; break;
+        case 2: out << ".half"; break;
+        case 4: out << ".long"; break;
+        }
+        usr* entry = v->usr_cast();
+        if (entry && size <= 4) {
+                string name = entry->m_name;
+                out << '\t' << name << '\n';
+                return offset + size;
+        }
+        if (addrof* addr = v->addrof_cast()) {
+                var* v = addr->m_ref;
+                usr* u = v->usr_cast();
+                assert(u);
+                int off = addr->m_offset;
+                out << '\t' << u->m_name;
+                if (off)
+                        out << "+" << off;
+                return offset + addr->m_type->size();
+        }
 
-	union {
-		unsigned __int64 ll;
-		int i[2];
-	} tmp = { strtoull(entry->m_name.c_str(),0,0) };
+        union {
+                unsigned __int64 ll;
+                int i[2];
+        } tmp = { strtoull(entry->m_name.c_str(),0,0) };
 
-	int i = 1;
-	if ( *(char*)&i )
-		swap(tmp.i[0],tmp.i[1]);
-	out << '\t' << ".long" << '\t' << tmp.i[0] << '\n';
-	out << '\t' << ".long" << '\t' << tmp.i[1] << '\n';
-	return offset + size;
+        int i = 1;
+        if ( *(char*)&i )
+                swap(tmp.i[0],tmp.i[1]);
+        out << '\t' << ".long" << '\t' << tmp.i[0] << '\n';
+        out << '\t' << ".long" << '\t' << tmp.i[1] << '\n';
+        return offset + size;
 }
 
 void long_double_bit(int [4], const COMPILER::usr*);
 
 int initial_real(int offset, COMPILER::var* v)
 {
-	using namespace std;
-	using namespace COMPILER;
-	usr* entry = v->usr_cast();
-	assert(entry);
-	const type* T = entry->m_type;
-	int size = T->size();
-	if ( size == 4 ){
-		union {
-		  float f;
-		  int i;
-		} tmp = { (float)atof(entry->m_name.c_str()) };
-		ostringstream os;
-		out << '\t' << ".long" << '\t' << tmp.i;
-		return offset + size;
-	}
-	
-	if ( size == 8 ){
-		union {
-			double d;
-			int i[2];
-		} tmp = { atof(entry->m_name.c_str()) };
-		int i = 1;
-		if ( *(char*)&i )
-			swap(tmp.i[0],tmp.i[1]);
-		out << '\t' << ".long" << '\t' << tmp.i[0] << '\n';
-		out << '\t' << ".long" << '\t' << tmp.i[1] << '\n';
-	    return offset + size;
-	}
+        using namespace std;
+        using namespace COMPILER;
+        usr* entry = v->usr_cast();
+        assert(entry);
+        const type* T = entry->m_type;
+        int size = T->size();
+        if ( size == 4 ){
+                union {
+                  float f;
+                  int i;
+                } tmp = { (float)atof(entry->m_name.c_str()) };
+                ostringstream os;
+                out << '\t' << ".long" << '\t' << tmp.i;
+                return offset + size;
+        }
+        
+        if ( size == 8 ){
+                union {
+                        double d;
+                        int i[2];
+                } tmp = { atof(entry->m_name.c_str()) };
+                int i = 1;
+                if ( *(char*)&i )
+                        swap(tmp.i[0],tmp.i[1]);
+                out << '\t' << ".long" << '\t' << tmp.i[0] << '\n';
+                out << '\t' << ".long" << '\t' << tmp.i[1] << '\n';
+            return offset + size;
+        }
 
-	union {
-		long double ld;
-		int i[4];
-	} tmp;
-	if ( sizeof(long double) == 16 ){
-		tmp.ld = atof(entry->m_name.c_str());
-		int i = 1;
-		if (*(char*)&i) {
-			swap(tmp.i[0], tmp.i[3]);
-			swap(tmp.i[1], tmp.i[2]);
-		}
-	}
-	else
-		long_double_bit(&tmp.i[0],entry);
-	for ( int i = 0 ; i != 4 ; ++i )
-		out << '\t' << ".long" << '\t' << tmp.i[i] << '\n';
-	return offset + size;
+        union {
+                long double ld;
+                int i[4];
+        } tmp;
+        if ( sizeof(long double) == 16 ){
+                tmp.ld = atof(entry->m_name.c_str());
+                int i = 1;
+                if (*(char*)&i) {
+                        swap(tmp.i[0], tmp.i[3]);
+                        swap(tmp.i[1], tmp.i[2]);
+                }
+        }
+        else
+                long_double_bit(&tmp.i[0],entry);
+        for ( int i = 0 ; i != 4 ; ++i )
+                out << '\t' << ".long" << '\t' << tmp.i[i] << '\n';
+        return offset + size;
 }
 
 /*
