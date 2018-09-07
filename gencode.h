@@ -32,11 +32,11 @@ class gencode {
   static void unaop_notlonglong(const COMPILER::tac*, std::string);
   static void unaop_real(const COMPILER::tac*, std::string);
   static void unaop_longlong(const COMPILER::tac*, std::string, std::string);
-  static void tc(const COMPILER::tac*);
-  static int tc_id(const COMPILER::type*);
-  struct tc_table;
-  static tc_table m_tc_table;
-  friend struct tc_table;
+  static void cast(const COMPILER::tac*);
+  static int cast_id(const COMPILER::type*);
+  struct cast_table_t;
+  static cast_table_t cast_table;
+  friend struct cast_table_t;
   static void sint08_sint08(const COMPILER::tac*);
   static void sint08_uint08(const COMPILER::tac*);
   static void sint08_sint16(const COMPILER::tac*);

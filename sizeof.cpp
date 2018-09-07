@@ -8,19 +8,26 @@
 
 #include "sparc.h"
 
-extern "C" DLL_EXPORT int generator_sizeof(const COMPILER::type* T)
+extern "C" DLL_EXPORT int generator_sizeof(int n)
 {
-        using namespace COMPILER;
-        T = T->unqualified();
-
-#ifdef _MSC_VER
-        if (typeid(*T) == typeid(long_double_type))
-                return 16;
-#endif  // _MSC_VER
-    return T->size();
-}
-
-extern "C" DLL_EXPORT bool generator_require_align()
-{
-        return true;
+  using namespace COMPILER;
+  switch ((type::id)n) {
+  case type::SHORT:
+    return 2;
+  case type::INT:
+    return 4;
+  case type::LONG:
+    return 4;
+  case type::LONGLONG:
+    return 8;
+  case type::FLOAT:
+    return 4;
+  case type::DOUBLE:
+    return 8;
+  case type::LONG_DOUBLE:
+    return 16;
+  default:
+    assert((type::id)n == type::POINTER);
+    return 4;
+  }
 }

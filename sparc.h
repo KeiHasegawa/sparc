@@ -68,15 +68,15 @@ public:
 };
 
 class mem : public address {
-	const COMPILER::usr* m_usr;
-	std::string m_label;
+        const COMPILER::usr* m_usr;
+        std::string m_label;
 public:
-	mem(const COMPILER::usr* u) : m_usr(u) {};
-	mem(const COMPILER::usr* u, std::string label) : m_usr(u), m_label(label) {};
-	void load(std::string, int = 0) const;
-	void store(std::string) const;
-	void get(std::string) const;
-	std::string label() const { return m_usr->m_name;; }
+        mem(const COMPILER::usr* u) : m_usr(u) {};
+        mem(const COMPILER::usr* u, std::string label) : m_usr(u), m_label(label) {};
+        void load(std::string, int = 0) const;
+        void store(std::string) const;
+        void get(std::string) const;
+        std::string label() const { return m_usr->m_name;; }
 };
 
 extern std::map<const COMPILER::var*, address*> address_descriptor;
@@ -113,8 +113,8 @@ struct anonymous_table : std::map<const COMPILER::tag*, address*> {
   }
   void clear()
   {
-	  using namespace std;
-	  for_each(begin(),end(),destroy);
+          using namespace std;
+          for_each(begin(),end(),destroy);
       map<const COMPILER::tag*, address*>::clear();
   }
   ~anonymous_table()
@@ -173,10 +173,6 @@ extern stack* tmp_quad[2];
 #else // defined(_MSC_VER)
 #define DLL_EXPORT
 #endif // defined(_MSC_VER)
-
-extern "C" DLL_EXPORT int generator_sizeof(const COMPILER::type*);
-
-extern "C" DLL_EXPORT int generator_align(const COMPILER::type*);
 
 extern void(*output3ac)(std::ostream&, const COMPILER::tac*);
 

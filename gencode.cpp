@@ -26,23 +26,23 @@ struct gencode::table : std::map<COMPILER::tac::id_t, void (*)(const COMPILER::t
     (*this)[tac::OR] = _or;
     (*this)[tac::UMINUS] = uminus;
     (*this)[tac::TILDE] = tilde;
-    (*this)[tac::CAST] = tc;
+    (*this)[tac::CAST] = cast;
     (*this)[tac::ADDR] = addr;
-        (*this)[tac::INVLADDR] = invladdr;
-        (*this)[tac::INVRADDR] = invraddr;
-        (*this)[tac::LOFF] = loff;
-        (*this)[tac::ROFF] = roff;
-        (*this)[tac::PARAM] = param;
+    (*this)[tac::INVLADDR] = invladdr;
+    (*this)[tac::INVRADDR] = invraddr;
+    (*this)[tac::LOFF] = loff;
+    (*this)[tac::ROFF] = roff;
+    (*this)[tac::PARAM] = param;
     (*this)[tac::CALL] = call;
     (*this)[tac::RETURN] = _return;
-        (*this)[tac::GOTO] = _goto;
-        (*this)[tac::TO] = to;
-        (*this)[tac::ALLOC] = alloc;
-        (*this)[tac::DEALLOC] = dealloc;
-        (*this)[tac::ASM] = asm_;
+    (*this)[tac::GOTO] = _goto;
+    (*this)[tac::TO] = to;
+    (*this)[tac::ALLOC] = alloc;
+    (*this)[tac::DEALLOC] = dealloc;
+    (*this)[tac::ASM] = asm_;
     (*this)[tac::VASTART] = _va_start;
-        (*this)[tac::VAARG] = _va_arg;
-        (*this)[tac::VAEND] = _va_end;
+    (*this)[tac::VAARG] = _va_arg;
+    (*this)[tac::VAEND] = _va_end;
   }
 };
 
@@ -50,16 +50,16 @@ gencode::table gencode::m_table;
 
 inline bool cmp_id(const COMPILER::tac* tac, COMPILER::tac::id_t id)
 {
-        return tac->id == id;
+  return tac->id == id;
 }
 
 address* getaddr(COMPILER::var* entry)
 {
-        using namespace std;
-        using namespace COMPILER;
-    map<const var*, address*>::const_iterator p = address_descriptor.find(entry);
-    assert(p != address_descriptor.end());
-    return p->second;
+  using namespace std;
+  using namespace COMPILER;
+  map<const var*, address*>::const_iterator p = address_descriptor.find(entry);
+  assert(p != address_descriptor.end());
+  return p->second;
 }
 
 // assumption
@@ -67,52 +67,52 @@ address* getaddr(COMPILER::var* entry)
 // %o1 : source address is set
 void _copy(int size)
 {
-        if (size <= 4095)
-                out << '\t' << "mov" << '\t' << size << ", %o2" << '\n';
-        else {
-                out << '\t' << "sethi" << '\t' << "%hi(" << size << "), %o2" << '\n';
-                out << '\t' << "or" << '\t' << "%o2, %lo(" << size << "), %o2" << '\n';
-        }
-        out << '\t' << "call" << '\t' << "memcpy" << '\n';
-        out << '\t' << "nop" << '\n';
+  if (size <= 4095)
+    out << '\t' << "mov" << '\t' << size << ", %o2" << '\n';
+  else {
+    out << '\t' << "sethi" << '\t' << "%hi(" << size << "), %o2" << '\n';
+    out << '\t' << "or" << '\t' << "%o2, %lo(" << size << "), %o2" << '\n';
+  }
+  out << '\t' << "call" << '\t' << "memcpy" << '\n';
+  out << '\t' << "nop" << '\n';
 }
 
 void copy(address* dst, address* src, int size)
 {
-        if (dst && src) {
-                dst->get("%o0");
-                src->get("%o1");
-                return _copy(size);
-        }
+  if (dst && src) {
+    dst->get("%o0");
+    src->get("%o1");
+    return _copy(size);
+  }
 
-        if (dst) {
-                dst->get("%o0");
-                return _copy(size);
-        }
+  if (dst) {
+    dst->get("%o0");
+    return _copy(size);
+  }
 
-        if (src) {
-                src->get("%o1");
-                return _copy(size);
-        }
+  if (src) {
+    src->get("%o1");
+    return _copy(size);
+  }
 
-        _copy(size);
+  _copy(size);
 }
 
 void copy_record_param(const COMPILER::tac* tac)
 {
-        using namespace std;
-        using namespace COMPILER;
-        assert(cmp_id(tac, tac::PARAM));
-        var* y = tac->y;
-        const type* T = y->m_type;
-        int size = T->size();
-        if (T->scalar() && size <= 8)
-                return;
-        map<var*, ::stack*>::const_iterator p = record_param.find(y);
-        assert(p != record_param.end());
-        ::stack* dst = p->second;
-        address* src = getaddr(y);
-        copy(dst, src, size);
+  using namespace std;
+  using namespace COMPILER;
+  assert(cmp_id(tac, tac::PARAM));
+  var* y = tac->y;
+  const type* T = y->m_type;
+  int size = T->size();
+  if (T->scalar() && size <= 8)
+    return;
+  map<var*, ::stack*>::const_iterator p = record_param.find(y);
+  assert(p != record_param.end());
+  ::stack* dst = p->second;
+  address* src = getaddr(y);
+  copy(dst, src, size);
 }
 
 void gencode::operator()(const COMPILER::tac* ptr)
@@ -129,8 +129,8 @@ void gencode::operator()(const COMPILER::tac* ptr)
 
   if ( cmp_id(ptr, tac::PARAM) && !m_record_param ){
     vector<tac*>::const_iterator p =
-          find_if(m_v3ac.begin() + m_counter, m_v3ac.end(), bind2nd(ptr_fun(cmp_id), tac::CALL));
-        for_each(m_v3ac.begin() + m_counter, p, copy_record_param);
+      find_if(m_v3ac.begin() + m_counter, m_v3ac.end(), bind2nd(ptr_fun(cmp_id), tac::CALL));
+    for_each(m_v3ac.begin() + m_counter, p, copy_record_param);
     m_record_param = true;
   }
   else if ( cmp_id(ptr, tac::CALL) )
@@ -141,9 +141,9 @@ void gencode::operator()(const COMPILER::tac* ptr)
 
 void gencode::assign(const COMPILER::tac* tac)
 {
-        using namespace COMPILER;
-        const type* T = tac->x->m_type;
-        T->scalar() ? assign_scalar(tac) : assign_aggregate(tac);
+  using namespace COMPILER;
+  const type* T = tac->x->m_type;
+  T->scalar() ? assign_scalar(tac) : assign_aggregate(tac);
 }
 
 void gencode::assign_scalar(const COMPILER::tac* tac)
@@ -333,7 +333,8 @@ void gencode::runtime_longlong_shift(const COMPILER::tac* tac, std::string func)
   address* z = getaddr(tac->z);
   y->load("%o0");
   z->load("%o2");
-  int size = generator_sizeof(tac->z->m_type);
+  const type* T = tac->z->m_type;
+  int size = T->size();
   if ( size > 4 )
     out << '\t' << "mov" << '\t' << "%o3, %o2" << '\n';
   out << '\t' << "call" << '\t' << func << '\n';
@@ -362,7 +363,8 @@ void gencode::binop_single(const COMPILER::tac* tac, std::string op)
   address* z = getaddr(tac->z);
   y->load("%f0");
   z->load("%f1");
-  int size = generator_sizeof(tac->x->m_type);
+  const type* T = tac->x->m_type;
+  int size = T->size();
   out << '\t' << op << 's' << '\t' << "%f0, %f1, %f0" << '\n';
   x->store("%f0");
 }
@@ -375,7 +377,8 @@ void gencode::binop_double(const COMPILER::tac* tac, std::string op)
   address* z = getaddr(tac->z);
   y->load("%f0");
   z->load("%f2");
-  int size = generator_sizeof(tac->x->m_type);
+  const type* T = tac->x->m_type;
+  int size = T->size();
   out << '\t' << op << 'd' << '\t' << "%f0, %f2, %f0" << '\n';
   x->store("%f0");
 }
@@ -453,147 +456,149 @@ void gencode::unaop_longlong(const COMPILER::tac* tac, std::string lo, std::stri
   x->store("%i0");
 }
 
-struct gencode::tc_table : std::map<std::pair<int,int>, void (*)(const COMPILER::tac*)> {
+struct gencode::cast_table_t : std::map<std::pair<int,int>, void (*)(const COMPILER::tac*)> {
 public:
-  tc_table()
+  cast_table_t()
   {
-    (*this)[std::make_pair(4,4)] = sint08_sint08;
-    (*this)[std::make_pair(4,6)] = sint08_uint08;
-    (*this)[std::make_pair(4,8)] = sint08_sint16;
-    (*this)[std::make_pair(4,10)] = sint08_uint16;
-    (*this)[std::make_pair(4,16)] = sint08_sint32;
-    (*this)[std::make_pair(4,18)] = sint08_uint32;
-    (*this)[std::make_pair(4,32)] = sint08_sint64;
-    (*this)[std::make_pair(4,34)] = sint08_uint64;
-    (*this)[std::make_pair(4,17)] = sint08_single;
-    (*this)[std::make_pair(4,33)] = sint08_double;
-    (*this)[std::make_pair(4,65)] = sint08_quad;
+    using namespace std;
+    (*this)[make_pair(4,4)] = sint08_sint08;
+    (*this)[make_pair(4,6)] = sint08_uint08;
+    (*this)[make_pair(4,8)] = sint08_sint16;
+    (*this)[make_pair(4,10)] = sint08_uint16;
+    (*this)[make_pair(4,16)] = sint08_sint32;
+    (*this)[make_pair(4,18)] = sint08_uint32;
+    (*this)[make_pair(4,32)] = sint08_sint64;
+    (*this)[make_pair(4,34)] = sint08_uint64;
+    (*this)[make_pair(4,17)] = sint08_single;
+    (*this)[make_pair(4,33)] = sint08_double;
+    (*this)[make_pair(4,65)] = sint08_quad;
 
-    (*this)[std::make_pair(6,4)] = uint08_sint08;
-    (*this)[std::make_pair(6,8)] = uint08_sint16;
-    (*this)[std::make_pair(6,10)] = uint08_uint16;
-    (*this)[std::make_pair(6,16)] = uint08_sint32;
-    (*this)[std::make_pair(6,18)] = uint08_uint32;
-    (*this)[std::make_pair(6,32)] = uint08_sint64;
-    (*this)[std::make_pair(6,34)] = uint08_uint64;
-    (*this)[std::make_pair(6,17)] = uint08_single;
-    (*this)[std::make_pair(6,33)] = uint08_double;
-    (*this)[std::make_pair(6,65)] = uint08_quad;
+    (*this)[make_pair(6,4)] = uint08_sint08;
+    (*this)[make_pair(6,8)] = uint08_sint16;
+    (*this)[make_pair(6,10)] = uint08_uint16;
+    (*this)[make_pair(6,16)] = uint08_sint32;
+    (*this)[make_pair(6,18)] = uint08_uint32;
+    (*this)[make_pair(6,32)] = uint08_sint64;
+    (*this)[make_pair(6,34)] = uint08_uint64;
+    (*this)[make_pair(6,17)] = uint08_single;
+    (*this)[make_pair(6,33)] = uint08_double;
+    (*this)[make_pair(6,65)] = uint08_quad;
 
-    (*this)[std::make_pair(8,4)] = sint16_sint08;
-    (*this)[std::make_pair(8,6)] = sint16_uint08;
-    (*this)[std::make_pair(8,10)] = sint16_uint16;
-    (*this)[std::make_pair(8,16)] = sint16_sint32;
-    (*this)[std::make_pair(8,18)] = sint16_uint32;
-    (*this)[std::make_pair(8,32)] = sint16_sint64;
-    (*this)[std::make_pair(8,34)] = sint16_uint64;
-    (*this)[std::make_pair(8,17)] = sint16_single;
-    (*this)[std::make_pair(8,33)] = sint16_double;
-    (*this)[std::make_pair(8,65)] = sint16_quad;
+    (*this)[make_pair(8,4)] = sint16_sint08;
+    (*this)[make_pair(8,6)] = sint16_uint08;
+    (*this)[make_pair(8,10)] = sint16_uint16;
+    (*this)[make_pair(8,16)] = sint16_sint32;
+    (*this)[make_pair(8,18)] = sint16_uint32;
+    (*this)[make_pair(8,32)] = sint16_sint64;
+    (*this)[make_pair(8,34)] = sint16_uint64;
+    (*this)[make_pair(8,17)] = sint16_single;
+    (*this)[make_pair(8,33)] = sint16_double;
+    (*this)[make_pair(8,65)] = sint16_quad;
 
-    (*this)[std::make_pair(10,4)] = uint16_sint08;
-    (*this)[std::make_pair(10,6)] = uint16_uint08;
-    (*this)[std::make_pair(10,8)] = uint16_sint16;
-    (*this)[std::make_pair(10,16)] = uint16_sint32;
-    (*this)[std::make_pair(10,18)] = uint16_uint32;
-    (*this)[std::make_pair(10,32)] = uint16_sint64;
-    (*this)[std::make_pair(10,34)] = uint16_uint64;
-    (*this)[std::make_pair(10,17)] = uint16_single;
-    (*this)[std::make_pair(10,33)] = uint16_double;
-    (*this)[std::make_pair(10,65)] = uint16_quad;
+    (*this)[make_pair(10,4)] = uint16_sint08;
+    (*this)[make_pair(10,6)] = uint16_uint08;
+    (*this)[make_pair(10,8)] = uint16_sint16;
+    (*this)[make_pair(10,16)] = uint16_sint32;
+    (*this)[make_pair(10,18)] = uint16_uint32;
+    (*this)[make_pair(10,32)] = uint16_sint64;
+    (*this)[make_pair(10,34)] = uint16_uint64;
+    (*this)[make_pair(10,17)] = uint16_single;
+    (*this)[make_pair(10,33)] = uint16_double;
+    (*this)[make_pair(10,65)] = uint16_quad;
 
-    (*this)[std::make_pair(16,4)] = sint32_sint08;
-    (*this)[std::make_pair(16,6)] = sint32_uint08;
-    (*this)[std::make_pair(16,8)] = sint32_sint16;
-    (*this)[std::make_pair(16,10)] = sint32_uint16;
-    (*this)[std::make_pair(16,16)] = sint32_sint32;
-    (*this)[std::make_pair(16,18)] = sint32_uint32;
-    (*this)[std::make_pair(16,32)] = sint32_sint64;
-    (*this)[std::make_pair(16,34)] = sint32_uint64;
-    (*this)[std::make_pair(16,17)] = sint32_single;
-    (*this)[std::make_pair(16,33)] = sint32_double;
-    (*this)[std::make_pair(16,65)] = sint32_quad;
+    (*this)[make_pair(16,4)] = sint32_sint08;
+    (*this)[make_pair(16,6)] = sint32_uint08;
+    (*this)[make_pair(16,8)] = sint32_sint16;
+    (*this)[make_pair(16,10)] = sint32_uint16;
+    (*this)[make_pair(16,16)] = sint32_sint32;
+    (*this)[make_pair(16,18)] = sint32_uint32;
+    (*this)[make_pair(16,32)] = sint32_sint64;
+    (*this)[make_pair(16,34)] = sint32_uint64;
+    (*this)[make_pair(16,17)] = sint32_single;
+    (*this)[make_pair(16,33)] = sint32_double;
+    (*this)[make_pair(16,65)] = sint32_quad;
 
-    (*this)[std::make_pair(18,4)] = uint32_sint08;
-    (*this)[std::make_pair(18,6)] = uint32_uint08;
-    (*this)[std::make_pair(18,8)] = uint32_sint16;
-    (*this)[std::make_pair(18,10)] = uint32_uint16;
-    (*this)[std::make_pair(18,16)] = uint32_sint32;
-    (*this)[std::make_pair(18,18)] = uint32_uint32;
-    (*this)[std::make_pair(18,32)] = uint32_sint64;
-    (*this)[std::make_pair(18,34)] = uint32_uint64;
-    (*this)[std::make_pair(18,17)] = uint32_single;
-    (*this)[std::make_pair(18,33)] = uint32_double;
-    (*this)[std::make_pair(18,65)] = uint32_quad;
+    (*this)[make_pair(18,4)] = uint32_sint08;
+    (*this)[make_pair(18,6)] = uint32_uint08;
+    (*this)[make_pair(18,8)] = uint32_sint16;
+    (*this)[make_pair(18,10)] = uint32_uint16;
+    (*this)[make_pair(18,16)] = uint32_sint32;
+    (*this)[make_pair(18,18)] = uint32_uint32;
+    (*this)[make_pair(18,32)] = uint32_sint64;
+    (*this)[make_pair(18,34)] = uint32_uint64;
+    (*this)[make_pair(18,17)] = uint32_single;
+    (*this)[make_pair(18,33)] = uint32_double;
+    (*this)[make_pair(18,65)] = uint32_quad;
 
-    (*this)[std::make_pair(32,4)] = sint64_sint08;
-    (*this)[std::make_pair(32,6)] = sint64_uint08;
-    (*this)[std::make_pair(32,8)] = sint64_sint16;
-    (*this)[std::make_pair(32,10)] = sint64_uint16;
-    (*this)[std::make_pair(32,16)] = sint64_sint32;
-    (*this)[std::make_pair(32,18)] = sint64_uint32;
-    (*this)[std::make_pair(32,34)] = sint64_uint64;
-    (*this)[std::make_pair(32,17)] = sint64_single;
-    (*this)[std::make_pair(32,33)] = sint64_double;
-    (*this)[std::make_pair(32,65)] = sint64_quad;
+    (*this)[make_pair(32,4)] = sint64_sint08;
+    (*this)[make_pair(32,6)] = sint64_uint08;
+    (*this)[make_pair(32,8)] = sint64_sint16;
+    (*this)[make_pair(32,10)] = sint64_uint16;
+    (*this)[make_pair(32,16)] = sint64_sint32;
+    (*this)[make_pair(32,18)] = sint64_uint32;
+    (*this)[make_pair(32,34)] = sint64_uint64;
+    (*this)[make_pair(32,17)] = sint64_single;
+    (*this)[make_pair(32,33)] = sint64_double;
+    (*this)[make_pair(32,65)] = sint64_quad;
 
-    (*this)[std::make_pair(34,4)] = uint64_sint08;
-    (*this)[std::make_pair(34,6)] = uint64_uint08;
-    (*this)[std::make_pair(34,8)] = uint64_sint16;
-    (*this)[std::make_pair(34,10)] = uint64_uint16;
-    (*this)[std::make_pair(34,16)] = uint64_sint32;
-    (*this)[std::make_pair(34,18)] = uint64_uint32;
-    (*this)[std::make_pair(34,32)] = uint64_sint64;
-    (*this)[std::make_pair(34,17)] = uint64_single;
-    (*this)[std::make_pair(34,33)] = uint64_double;
-    (*this)[std::make_pair(34,65)] = uint64_quad;
+    (*this)[make_pair(34,4)] = uint64_sint08;
+    (*this)[make_pair(34,6)] = uint64_uint08;
+    (*this)[make_pair(34,8)] = uint64_sint16;
+    (*this)[make_pair(34,10)] = uint64_uint16;
+    (*this)[make_pair(34,16)] = uint64_sint32;
+    (*this)[make_pair(34,18)] = uint64_uint32;
+    (*this)[make_pair(34,32)] = uint64_sint64;
+    (*this)[make_pair(34,17)] = uint64_single;
+    (*this)[make_pair(34,33)] = uint64_double;
+    (*this)[make_pair(34,65)] = uint64_quad;
     
-    (*this)[std::make_pair(17,4)] = single_sint08;
-    (*this)[std::make_pair(17,6)] = single_uint08;
-    (*this)[std::make_pair(17,8)] = single_sint16;
-    (*this)[std::make_pair(17,10)] = single_uint16;
-    (*this)[std::make_pair(17,16)] = single_sint32;
-    (*this)[std::make_pair(17,18)] = single_uint32;
-    (*this)[std::make_pair(17,32)] = single_sint64;
-    (*this)[std::make_pair(17,34)] = single_uint64;
-    (*this)[std::make_pair(17,33)] = single_double;
-    (*this)[std::make_pair(17,65)] = single_quad;
+    (*this)[make_pair(17,4)] = single_sint08;
+    (*this)[make_pair(17,6)] = single_uint08;
+    (*this)[make_pair(17,8)] = single_sint16;
+    (*this)[make_pair(17,10)] = single_uint16;
+    (*this)[make_pair(17,16)] = single_sint32;
+    (*this)[make_pair(17,18)] = single_uint32;
+    (*this)[make_pair(17,32)] = single_sint64;
+    (*this)[make_pair(17,34)] = single_uint64;
+    (*this)[make_pair(17,33)] = single_double;
+    (*this)[make_pair(17,65)] = single_quad;
 
-    (*this)[std::make_pair(33,4)] = double_sint08;
-    (*this)[std::make_pair(33,6)] = double_uint08;
-    (*this)[std::make_pair(33,8)] = double_sint16;
-    (*this)[std::make_pair(33,10)] = double_uint16;
-    (*this)[std::make_pair(33,16)] = double_sint32;
-    (*this)[std::make_pair(33,18)] = double_uint32;
-    (*this)[std::make_pair(33,32)] = double_sint64;
-    (*this)[std::make_pair(33,34)] = double_uint64;
-    (*this)[std::make_pair(33,17)] = double_single;
-    (*this)[std::make_pair(33,65)] = double_quad;
+    (*this)[make_pair(33,4)] = double_sint08;
+    (*this)[make_pair(33,6)] = double_uint08;
+    (*this)[make_pair(33,8)] = double_sint16;
+    (*this)[make_pair(33,10)] = double_uint16;
+    (*this)[make_pair(33,16)] = double_sint32;
+    (*this)[make_pair(33,18)] = double_uint32;
+    (*this)[make_pair(33,32)] = double_sint64;
+    (*this)[make_pair(33,34)] = double_uint64;
+    (*this)[make_pair(33,17)] = double_single;
+    (*this)[make_pair(33,65)] = double_quad;
 
-    (*this)[std::make_pair(65,4)] = quad_sint08;
-    (*this)[std::make_pair(65,6)] = quad_uint08;
-    (*this)[std::make_pair(65,8)] = quad_sint16;
-    (*this)[std::make_pair(65,10)] = quad_uint16;
-    (*this)[std::make_pair(65,16)] = quad_sint32;
-    (*this)[std::make_pair(65,18)] = quad_uint32;
-    (*this)[std::make_pair(65,32)] = quad_sint64;
-    (*this)[std::make_pair(65,34)] = quad_uint64;
-    (*this)[std::make_pair(65,17)] = quad_single;
-    (*this)[std::make_pair(65,33)] = quad_double;
+    (*this)[make_pair(65,4)] = quad_sint08;
+    (*this)[make_pair(65,6)] = quad_uint08;
+    (*this)[make_pair(65,8)] = quad_sint16;
+    (*this)[make_pair(65,10)] = quad_uint16;
+    (*this)[make_pair(65,16)] = quad_sint32;
+    (*this)[make_pair(65,18)] = quad_uint32;
+    (*this)[make_pair(65,32)] = quad_sint64;
+    (*this)[make_pair(65,34)] = quad_uint64;
+    (*this)[make_pair(65,17)] = quad_single;
+    (*this)[make_pair(65,33)] = quad_double;
   }
 };
 
-gencode::tc_table gencode::m_tc_table;
+gencode::cast_table_t gencode::cast_table;
 
-void gencode::tc(const COMPILER::tac* tac)
+void gencode::cast(const COMPILER::tac* tac)
 {
+  using namespace std;
   using namespace COMPILER;
-  int x = tc_id(tac->x->m_type);
-  int y = tc_id(tac->y->m_type);
-  m_tc_table[std::make_pair(x,y)](tac);
+  int x = cast_id(tac->x->m_type);
+  int y = cast_id(tac->y->m_type);
+  cast_table[make_pair(x,y)](tac);
 }
 
-int gencode::tc_id(const COMPILER::type* T)
+int gencode::cast_id(const COMPILER::type* T)
 {
   using namespace COMPILER;
   int n = (T->integer() && !T->_signed()) ? 1 : 0;
