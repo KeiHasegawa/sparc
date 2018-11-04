@@ -34,8 +34,8 @@ void genfunc(const COMPILER::fundef* fundef, const std::vector<COMPILER::tac*>& 
   if ( !func->m_csymbol )
           func_label += signature(func->m_type);
 #endif // CXX_GENERATOR
-  usr::flag flag = fundef->m_usr->m_flag;
-  usr::flag mask = usr::flag(usr::STATIC | usr::INLINE);
+  usr::flag_t flag = fundef->m_usr->m_flag;
+  usr::flag_t mask = usr::flag_t(usr::STATIC | usr::INLINE);
   if ( !(flag & mask) )
     out << '\t' << ".global" << '\t' << func_label << '\n';
   out << '\t' << ".align" << '\t' << 4 << '\n';
@@ -196,7 +196,7 @@ int parameter(int offset, COMPILER::usr* entry)
 {
   using namespace COMPILER;
 #ifdef CXX_GENERATOR
-  usr::flag flag = entry->m_flag;
+  usr::flag_t flag = entry->m_flag;
   if ( flag & usr::TYPEDEF )
     return offset;
 #endif // CXX_GENERATOR
@@ -252,8 +252,8 @@ int recursive_locvar::add(int n, const std::pair<std::string, std::vector<COMPIL
 int recursive_locvar::add2(int n, COMPILER::usr* entry)
 {
         using namespace COMPILER;
-        usr::flag flag = entry->m_flag;
-        usr::flag mask = usr::flag(usr::TYPEDEF | usr::STATIC | usr::EXTERN | usr::FUNCTION | usr::VL);
+        usr::flag_t flag = entry->m_flag;
+        usr::flag_t mask = usr::flag_t(usr::TYPEDEF | usr::STATIC | usr::EXTERN | usr::FUNCTION | usr::VL);
         if (flag & mask)
                 return n;
 
@@ -325,7 +325,7 @@ void arg_count::operator()(const COMPILER::tac* tac)
 {
   using namespace std;
   using namespace COMPILER;
-  if ( tac->id == tac::PARAM ){
+  if ( tac->m_id == tac::PARAM ){
     var* y = tac->y;
     const type* T = y->m_type;
         T = T->promotion();
@@ -339,7 +339,7 @@ void arg_count::operator()(const COMPILER::tac* tac)
       record_param[y] = new ::stack(-m_offset,size);
     }
   }
-  else if ( tac->id == tac::CALL ){
+  else if ( tac->m_id == tac::CALL ){
     *m_res = max(*m_res,m_curr);
     stack_layout.m_local = max(stack_layout.m_local,m_offset);
     m_curr = 0;

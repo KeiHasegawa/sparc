@@ -11,7 +11,7 @@
 extern "C" DLL_EXPORT int generator_sizeof(int n)
 {
   using namespace COMPILER;
-  switch ((type::id)n) {
+  switch ((type::id_t)n) {
   case type::SHORT:
     return 2;
   case type::INT:
@@ -27,7 +27,7 @@ extern "C" DLL_EXPORT int generator_sizeof(int n)
   case type::LONG_DOUBLE:
     return 16;
   default:
-    assert((type::id)n == type::POINTER);
+    assert((type::id_t)n == type::POINTER);
     return 4;
   }
 }

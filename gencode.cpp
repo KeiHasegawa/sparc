@@ -50,7 +50,7 @@ gencode::table gencode::m_table;
 
 inline bool cmp_id(const COMPILER::tac* tac, COMPILER::tac::id_t id)
 {
-  return tac->id == id;
+  return tac->m_id == id;
 }
 
 address* getaddr(COMPILER::var* entry)
@@ -136,7 +136,7 @@ void gencode::operator()(const COMPILER::tac* ptr)
   else if ( cmp_id(ptr, tac::CALL) )
     m_record_param = false;
 
-  m_table[ptr->id](ptr);
+  m_table[ptr->m_id](ptr);
 }
 
 void gencode::assign(const COMPILER::tac* tac)

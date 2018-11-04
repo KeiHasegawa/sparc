@@ -42,13 +42,13 @@ void output_data2(const COMPILER::usr* entry)
 {
   using namespace std;
   using namespace COMPILER;
-  usr::flag flag = entry->m_flag;
+  usr::flag_t flag = entry->m_flag;
   if (flag & usr::TYPEDEF)
     return;
   if (address_descriptor.find(entry) != address_descriptor.end())
     return;
 
-  usr::flag mask = usr::flag(usr::EXTERN | usr::FUNCTION);
+  usr::flag_t mask = usr::flag_t(usr::EXTERN | usr::FUNCTION);
   if (flag & mask) {
     address_descriptor[entry] = new mem(entry);
     return;
