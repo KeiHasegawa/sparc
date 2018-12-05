@@ -37,8 +37,7 @@ struct gencode::table : std::map<COMPILER::tac::id_t, void (*)(const COMPILER::t
     (*this)[tac::RETURN] = _return;
     (*this)[tac::GOTO] = _goto;
     (*this)[tac::TO] = to;
-    (*this)[tac::ALLOC] = alloc;
-    (*this)[tac::DEALLOC] = dealloc;
+    (*this)[tac::ALLOCA] = _alloca_;
     (*this)[tac::ASM] = asm_;
     (*this)[tac::VASTART] = _va_start;
     (*this)[tac::VAARG] = _va_arg;
@@ -2483,7 +2482,7 @@ void gencode::ifgoto_longlong(const COMPILER::tac* tac)
   out << label << ":\n";
 }
 
-void gencode::alloc(const COMPILER::tac* tac)
+void gencode::_alloca_(const COMPILER::tac* tac)
 {
   using namespace COMPILER;
   address* size = getaddr(tac->y);
@@ -2494,16 +2493,6 @@ void gencode::alloc(const COMPILER::tac* tac)
   int n = stack_layout.m_local;
   stack_layout.m_allocated.push_back(tac->y);
   address_descriptor[entry] = new stack(-n,tac->y);
-}
-
-void gencode::dealloc(const COMPILER::tac* tac)
-{
-        using namespace std;
-        using namespace COMPILER;
-        address* z = getaddr(tac->z);
-        z->load("%o0");
-        out << '\t' << "add" << '\t' << "%sp, %o0, %sp" << '\n';
-        out << '\t' << "and" << '\t' << "%sp, -8, %sp" << '\n';
 }
 
 void gencode::asm_(const COMPILER::tac* tac)

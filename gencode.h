@@ -231,8 +231,7 @@ class gencode {
   static ifgoto_table m_ifgoto_table;
   struct ifgoto_longlong_table;
   static ifgoto_longlong_table m_ifgoto_longlong_table;
-  static void alloc(const COMPILER::tac*);
-  static void dealloc(const COMPILER::tac*);
+  static void _alloca_(const COMPILER::tac*);
   static void asm_(const COMPILER::tac*);
   static void _va_start(const COMPILER::tac*);
   static void _va_start16(const COMPILER::tac*);
