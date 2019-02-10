@@ -112,16 +112,7 @@ extern "C" DLL_EXPORT int generator_open_file(const char* fn)
 
 inline void destroy_address(std::pair<const COMPILER::var*, address*> pair)
 {
-#ifndef CXX_GENERATOR
         delete pair.second;
-#else // CXX_GENERATOR
-        const storage_class* storage = pair.first->m_storage;
-        typedef const enum_member_class MEM;
-        typedef const anonymous_class ANONYMOUS;
-    bool b = !dynamic_cast<MEM*>(storage) && !dynamic_cast<ANONYMOUS*>(storage);
-        if (b)
-                delete pair.second;
-#endif // CXX_GENERATOR
 }
 
 #ifdef CXX_GENERATOR
@@ -681,15 +672,3 @@ bool integer_suffix(int c)
 {
   return c == 'U' || c == 'L' || c == 'u' || c == 'l';
 }
-
-#ifdef CXX_GENERATOR
-std::string signature(const type_expr* type)
-{
-#ifdef _MSC_VER
-  use_ostream_magic obj;
-#endif // _MSC_VER
-  std::ostringstream os;
-  type->encode(os);
-  return func_name(os.str());
-}
-#endif // CXX_GENERATOR

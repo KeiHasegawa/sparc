@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <cmath>
 
 #ifdef CXX_GENERATOR
 #include "cxx_core.h"
@@ -343,12 +344,17 @@ bool cxxbuiltin(const COMPILER::usr* entry, std::string* res)
     return false;
 }
 
-std::string scope_name(COMPILER::scope* scope)
+std::string scope_name(COMPILER::scope* ptr)
 {
-  if ( tag* T = dynamic_cast<tag*>(scope) )
-    return scope_name(scope->m_parent) + func_name(T->name());
-  if ( _namespace* nmsp = dynamic_cast<_namespace*>(scope) )
-    return nmsp->name();
+  using namespace COMPILER;
+  if (ptr->m_id == scope::TAG) {
+    tag* T = static_cast<tag*>(ptr) ;
+    return scope_name(ptr->m_parent) + func_name(T->m_name);
+  }
+  if (ptr->m_id == scope::NAMESPACE) {
+    name_space* N = static_cast<name_space*>(ptr) ;
+    return N->m_name;
+  }
   return "";
 }
 
@@ -393,17 +399,17 @@ std::string func_name(std::string name)
 
 void entry_func_sub(const COMPILER::usr* func)
 {
-  if ( func->m_templ_func )
-    return;
+  using namespace COMPILER;
   if ( address_descriptor.find(func) == address_descriptor.end() ){
     std::string label;
     if ( !cxxbuiltin(func,&label) ){
       label = scope_name(func->m_scope);
       label += func_name(func->m_name);
-      if ( !func->m_cCOMPILER::usr )
+      usr::flag_t flag = func->m_flag;
+      if (flag & usr::C_SYMBOL)
         label += signature(func->m_type);
     }
-    address_descriptor[func] = new mem(label,func->m_type);
+    address_descriptor[func] = new mem(func, label);
   }
 }
 
@@ -411,5 +417,19 @@ void entry_func(const std::pair<std::string,std::vector<COMPILER::usr*> >& pair)
 {
   const std::vector<COMPILER::usr*>& vec = pair.second;
   std::for_each(vec.begin(),vec.end(),entry_func_sub);
+}
+
+std::string signature(const COMPILER::type* T)
+{
+  using namespace std;
+  using namespace COMPILER;
+  ostringstream os;
+  assert(T->m_id == type::FUNC);
+  typedef const func_type FT;
+  FT* ft = static_cast<FT*>(T);
+  const vector<const type*>& param = ft->param();
+  for (auto T : param)
+    T->encode(os);
+  return os.str();
 }
 #endif // CXX_GENERATOR

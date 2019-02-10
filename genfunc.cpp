@@ -25,16 +25,14 @@ void genfunc(const COMPILER::fundef* fundef, const std::vector<COMPILER::tac*>& 
   using namespace std;
   using namespace COMPILER;
   output_section(rom);
-
+  usr* func = fundef->m_usr;
 #ifndef CXX_GENERATOR
-  func_label = fundef->m_usr->m_name;
+  func_label = func->m_name;
 #else // CXX_GENERATOR
   func_label = scope_name(func->m_scope);
   func_label += func_name(func->m_name);
-  if ( !func->m_csymbol )
-          func_label += signature(func->m_type);
 #endif // CXX_GENERATOR
-  usr::flag_t flag = fundef->m_usr->m_flag;
+  usr::flag_t flag = func->m_flag;
   usr::flag_t mask = usr::flag_t(usr::STATIC | usr::INLINE);
   if ( !(flag & mask) )
     out << '\t' << ".global" << '\t' << func_label << '\n';
@@ -46,12 +44,6 @@ void genfunc(const COMPILER::fundef* fundef, const std::vector<COMPILER::tac*>& 
   if ( !v3ac.empty() )
     for_each(v3ac.begin(),v3ac.end(),gencode(v3ac));
   leave();
-#ifdef CXX_GENERATOR
-  switch ( func->m_initialize_or_destruct ){
-  case _initialize: ctors.push_back(name); break;
-  case _destruct: dtor_name = name; break;
-  }
-#endif // CXX_GENERATOR
 }
 
 int sched_stack(const COMPILER::fundef*, const std::vector<COMPILER::tac*>&);
@@ -79,17 +71,18 @@ void enter(const COMPILER::fundef* fundef, const std::vector<COMPILER::tac*>& v3
   save_parameter(fundef);
 }
 
-bool is_top(const COMPILER::scope* scope)
+bool is_top(const COMPILER::scope* ptr)
 {
+  using namespace COMPILER;
 #ifndef CXX_GENERATOR
-  return !scope->m_parent;
+  return !ptr->m_parent;
 #else // CXX_GENERATOR
-  if ( !scope->m_parent )
+  if ( !ptr->m_parent )
     return true;
-  if ( dynamic_cast<tag*>(scope) )
-    return is_top(scope->m_parent);
-  if ( dynamic_cast<_namespace*>(scope) )
-    return is_top(scope->m_parent);
+  if ( ptr->m_id == scope::TAG )
+    return is_top(ptr->m_parent);
+  if ( ptr->m_id == scope::NAMESPACE )
+    return is_top(ptr->m_parent);
   return false;
 #endif // CXX_GENERATOR
 }
@@ -172,6 +165,9 @@ int local_variable(const COMPILER::fundef* fundef)
   using namespace COMPILER;
   const scope* p = fundef->m_param;
   assert(p->m_id == scope::PARAM);
+#ifdef CXX_GENERATOR
+  typedef scope param_scope;
+#endif // CXX_GENERATOR
   const param_scope* param = static_cast<const param_scope*>(p);
   const vector<usr*>& vec = param->m_order;
   accumulate(vec.begin(),vec.end(),aggre_regwin,parameter);
@@ -262,29 +258,12 @@ int recursive_locvar::add2(int n, COMPILER::usr* entry)
 
         const type* T = entry->m_type;
 
-#ifdef CXX_GENERATOR
-  typedef const anonymous_class ANONYMOUS;
-  if ( ANONYMOUS* anonymous = dynamic_cast<ANONYMOUS*>(storage) ){
-    const tag* T = anonymous->get_tag();
-    std::map<const tag*, address*>::const_iterator p = anonymous_table.find(T);
-    if ( p != anonymous_table.end() ){
-      address_descriptor[entry] = p->second;
-      return n;
-    }
-    type = T->get_type();
-  }
-#endif // CXX_GENERATOR
-
   int size = T->size();
   int al = T->align();
   n += size;
   n = align(n,al);
   address_descriptor[entry] = new stack(-n,size);
 
-#ifdef CXX_GENERATOR
-  if ( ANONYMOUS* anonymous = dynamic_cast<ANONYMOUS*>(storage) )
-    anonymous_table[anonymous->get_tag()] = address_descriptor[entry];
-#endif // CXX_GENERATOR
   return n;
 }
 
@@ -358,61 +337,63 @@ void save_if_varg(const COMPILER::usr* func, int regno);
 
 void save_parameter(const COMPILER::fundef* fundef)
 {
-        using namespace std;
-        using namespace COMPILER;
+  using namespace std;
+  using namespace COMPILER;
 
-        const COMPILER::usr* func = fundef->m_usr;
-        const COMPILER::param_scope* parameter = fundef->m_param;
-        const vector<usr*>& vec = parameter->m_order;
-        int offset;
-        for_each(vec.begin(),vec.end(),save(&offset));
-        save_if_varg(func,(offset - aggre_regwin)/4);
+  const COMPILER::usr* func = fundef->m_usr;
+#ifdef CXX_GENERATOR
+  typedef scope param_scope;
+#endif // CXX_GENERATOR
+  const param_scope* parameter = fundef->m_param;
+  const vector<usr*>& vec = parameter->m_order;
+  int offset;
+  for_each(vec.begin(),vec.end(),save(&offset));
+  save_if_varg(func,(offset - aggre_regwin)/4);
 }
 
 void save_if_varg(const COMPILER::usr* func, int regno)
 {
-        using namespace std;
-        using namespace COMPILER;
-        const type* T = func->m_type;
-        typedef const func_type FUNC;
-        FUNC* ft = static_cast<FUNC*>(T);
-        const vector<const type*>& param = ft->param();
-        if (param.empty())
-                return;
-        T = param.back();
-        if (T->m_id != type::ELLIPSIS)
-                return;
-    for ( int i = regno ; i < 6 ; ++i ){
-      string reg = "%i";
-      reg += char('0' + i);
-      int offset = 4 * i + 68;
-      out << '\t' << "st" << '\t' << reg << ", [%fp+" << offset << "]\n";
-    }
+  using namespace std;
+  using namespace COMPILER;
+  const type* T = func->m_type;
+  typedef const func_type FUNC;
+  FUNC* ft = static_cast<FUNC*>(T);
+  const vector<const type*>& param = ft->param();
+  if (param.empty())
+    return;
+  T = param.back();
+  if (T->m_id != type::ELLIPSIS)
+    return;
+  for ( int i = regno ; i < 6 ; ++i ){
+    string reg = "%i";
+    reg += char('0' + i);
+    int offset = 4 * i + 68;
+    out << '\t' << "st" << '\t' << reg << ", [%fp+" << offset << "]\n";
+  }
 }
 
 void save::operator()(COMPILER::usr* entry)
 {
-        using namespace std;
-        using namespace COMPILER;
-#ifdef CXX_GENERATOR
-        if ( entry->m_typedef )
-                return;
-#endif // CXX_GENERATOR
+  using namespace std;
+  using namespace COMPILER;
+  usr::flag_t flag = entry->m_flag;
+  if (flag & usr::TYPEDEF)
+    return;
 
-        if (*m_offset >= 4 * 6 + aggre_regwin)
-                return;
+  if (*m_offset >= 4 * 6 + aggre_regwin)
+    return;
         
-        map<const var*, address*>::const_iterator p = address_descriptor.find(entry);
-        assert(p != address_descriptor.end());
-        string reg = "%i";
-        int index = (*m_offset - aggre_regwin)/4;
-        reg += char(index + '0');
-        typedef ::stack STACK;
-        STACK* q = static_cast<STACK*>(p->second);
-        q->save(reg);
-        const type* T = entry->m_type->promotion();
-        if ( T->aggregate() || T->size() == 16 )
-                *m_offset += 4;
-        else
-                *m_offset += T->size();
+  map<const var*, address*>::const_iterator p = address_descriptor.find(entry);
+  assert(p != address_descriptor.end());
+  string reg = "%i";
+  int index = (*m_offset - aggre_regwin)/4;
+  reg += char(index + '0');
+  typedef ::stack STACK;
+  STACK* q = static_cast<STACK*>(p->second);
+  q->save(reg);
+  const type* T = entry->m_type->promotion();
+  if ( T->aggregate() || T->size() == 16 )
+    *m_offset += 4;
+  else
+    *m_offset += T->size();
 }
