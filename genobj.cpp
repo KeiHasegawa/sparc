@@ -406,7 +406,7 @@ void entry_func_sub(const COMPILER::usr* func)
       label = scope_name(func->m_scope);
       label += func_name(func->m_name);
       usr::flag_t flag = func->m_flag;
-      if (flag & usr::C_SYMBOL)
+      if (!(flag & usr::C_SYMBOL))
         label += signature(func->m_type);
     }
     address_descriptor[func] = new mem(func, label);

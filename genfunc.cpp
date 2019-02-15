@@ -26,13 +26,15 @@ void genfunc(const COMPILER::fundef* fundef, const std::vector<COMPILER::tac*>& 
   using namespace COMPILER;
   output_section(rom);
   usr* func = fundef->m_usr;
+  usr::flag_t flag = func->m_flag;  
 #ifndef CXX_GENERATOR
   func_label = func->m_name;
 #else // CXX_GENERATOR
   func_label = scope_name(func->m_scope);
   func_label += func_name(func->m_name);
+  if (!(flag & usr::C_SYMBOL))
+    func_label += signature(func->m_type);
 #endif // CXX_GENERATOR
-  usr::flag_t flag = func->m_flag;
   usr::flag_t mask = usr::flag_t(usr::STATIC | usr::INLINE);
   if ( !(flag & mask) )
     out << '\t' << ".global" << '\t' << func_label << '\n';
