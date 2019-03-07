@@ -101,8 +101,8 @@ void clear_address_descriptor()
       ++p;
     else {
       IT q = p++;
-          delete q->second;
-          address_descriptor.erase(q);
+      delete q->second;
+      address_descriptor.erase(q);
     }
   }
 }
@@ -114,9 +114,9 @@ inline void destroy(const std::pair<const COMPILER::var*, stack*>& pair)
 
 void clear_record_param()
 {
-        using namespace std;
-        for_each(record_param.begin(),record_param.end(),destroy);
-        record_param.clear();
+  using namespace std;
+  for_each(record_param.begin(),record_param.end(),destroy);
+  record_param.clear();
 }
 
 void leave()
@@ -140,7 +140,8 @@ int fun_arg(const std::vector<COMPILER::tac*>&);
 
 struct stack_layout stack_layout;
 
-int sched_stack(const COMPILER::fundef* fundef, const std::vector<COMPILER::tac*>& v3ac)
+int sched_stack(const COMPILER::fundef* fundef,
+                const std::vector<COMPILER::tac*>& v3ac)
 {
   stack_layout.m_local = local_variable(fundef);
   stack_layout.m_allocated.clear();
@@ -201,10 +202,10 @@ int parameter(int offset, COMPILER::usr* entry)
   const type* T = entry->m_type;
   int unpromed = T->size();
   if ( T->scalar() && unpromed < 16 ){
-          T = T->promotion();
-          int size = T->size();
-          address_descriptor[entry] = new stack(offset,size,unpromed);
-          return offset + size;
+    T = T->promotion();
+    int size = T->size();
+    address_descriptor[entry] = new stack(offset,size,unpromed);
+    return offset + size;
   }
   else {
     address_descriptor[entry] = new stack(offset,4,-1);
@@ -224,10 +225,8 @@ void recursive_locvar::operator()(const COMPILER::scope* ptr)
 {
   using namespace std;
   using namespace COMPILER;
-#ifdef CXX_GENERATOR
-  if ( dynamic_cast<const tag*>(ptr) )
+  if (ptr->m_id != scope::BLOCK)
     return;
-#endif // CXX_GENERATOR
   const map<string,vector<usr*> >& usrs = ptr->m_usrs;
   *m_res = accumulate(usrs.begin(),usrs.end(),*m_res,add);
   assert(ptr->m_id == scope::BLOCK);
@@ -241,24 +240,24 @@ void recursive_locvar::operator()(const COMPILER::scope* ptr)
 
 int recursive_locvar::add(int n, const std::pair<std::string, std::vector<COMPILER::usr*> >& pair)
 {
-        using namespace std;
-        using namespace COMPILER;
-        const vector<usr*>& vec = pair.second;
-        return accumulate(vec.begin(), vec.end(), n, add2);
+  using namespace std;
+  using namespace COMPILER;
+  const vector<usr*>& vec = pair.second;
+  return accumulate(vec.begin(), vec.end(), n, add2);
 }
 
 int recursive_locvar::add2(int n, COMPILER::usr* entry)
 {
-        using namespace COMPILER;
-        usr::flag_t flag = entry->m_flag;
-        usr::flag_t mask = usr::flag_t(usr::TYPEDEF | usr::STATIC | usr::EXTERN | usr::FUNCTION | usr::VL);
-        if (flag & mask)
-                return n;
+  using namespace COMPILER;
+  usr::flag_t flag = entry->m_flag;
+  usr::flag_t mask = usr::flag_t(usr::TYPEDEF | usr::STATIC | usr::EXTERN | usr::FUNCTION | usr::VL);
+  if (flag & mask)
+    return n;
 
-    if ( entry->isconstant() )
-      return n;
+  if ( entry->isconstant() )
+    return n;
 
-        const type* T = entry->m_type;
+  const type* T = entry->m_type;
 
   int size = T->size();
   int al = T->align();
@@ -271,14 +270,14 @@ int recursive_locvar::add2(int n, COMPILER::usr* entry)
 
 int recursive_locvar::add3(int n, COMPILER::var* v)
 {
-        using namespace std;
-        using namespace COMPILER;
-        const type* T = v->m_type;
-        n = align(n, T->align());
-        int size = T->size();
-        n += size;
-        address_descriptor[v] = new ::stack(-n, size);
-        return n;
+  using namespace std;
+  using namespace COMPILER;
+  const type* T = v->m_type;
+  n = align(n, T->align());
+  int size = T->size();
+  n += size;
+  address_descriptor[v] = new ::stack(-n, size);
+  return n;
 }
 
 class arg_count {
@@ -294,10 +293,10 @@ public:
 
 int fun_arg(const std::vector<COMPILER::tac*>& v3ac)
 {
-        using namespace std;
-        int n;
-        for_each(v3ac.begin(),v3ac.end(),arg_count(&n));
-        return n < 24 ? 24 : n;
+  using namespace std;
+  int n;
+  for_each(v3ac.begin(),v3ac.end(),arg_count(&n));
+  return n < 24 ? 24 : n;
 }
 
 std::map<COMPILER::var*, stack*> record_param;

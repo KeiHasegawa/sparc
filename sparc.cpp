@@ -17,14 +17,17 @@ bool debug_flag;
 extern "C" DLL_EXPORT int generator_seed()
 {
 #ifdef _MSC_VER
-        int r = _MSC_VER;
+  int r = _MSC_VER;
 #ifndef CXX_GENERATOR
-        r += 10000000;
+  r += 10000000;
 #else // CXX_GENERATOR
-        r += 20000000;
+  r += 20000000;
 #endif // CXX_GENERATOR
+#ifdef _DEBUG
+  r +=  1000000;
+#endif // _DEBUG
 #ifdef WIN32
-        r += 100000;
+  r +=   100000;
 #endif // WIN32
 #endif // _MSC_VER
 #ifdef __GNUC__
