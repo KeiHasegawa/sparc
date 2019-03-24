@@ -25,4 +25,4 @@ $(SPARC_XX_DLL) : $(XX_OBJS)
 	$(CXX) $(CXXFLAGS_FOR_XX) -c $< -o $@
 
 clean:
-	$(RM) *.o *~ *.dll *.so .vs x64 Debug Release DebugCXX ReleaseCXX
+	$(RM) *.o *.obj *~ *.dll *.so .vs x64 Debug Release DebugCXX ReleaseCXX
