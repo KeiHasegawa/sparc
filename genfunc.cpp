@@ -173,7 +173,7 @@ int local_variable(const COMPILER::fundef* fundef)
 #endif // CXX_GENERATOR
   const param_scope* param = static_cast<const param_scope*>(p);
   const vector<usr*>& vec = param->m_order;
-  accumulate(vec.begin(),vec.end(),aggre_regwin,parameter);
+  (void)accumulate(vec.begin(),vec.end(),aggre_regwin,parameter);
   assert(param->m_children.size() == 1);
   p = param->m_children[0];
 
